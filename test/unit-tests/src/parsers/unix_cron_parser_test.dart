@@ -6,15 +6,15 @@ void main() {
 
   test('Failure parse', () {
     // invalid cron time
-    expect(() => parser.parse(''), throwsA(isA<AssertionError>()));
+    expect(() => parser.parse(''), throwsA(isA<ArgumentError>()));
     // only 5 fields
-    expect(() => parser.parse('* * * *'), throwsA(isA<AssertionError>()));
-    expect(() => parser.parse('* * * * * *'), throwsA(isA<AssertionError>()));
+    expect(() => parser.parse('* * * *'), throwsA(isA<ArgumentError>()));
+    expect(() => parser.parse('* * * * * *'), throwsA(isA<ArgumentError>()));
 
     // invalid separator
     expect(() {
       return parser.parse(',2 ,3 ,1 ,1 ,5');
-    }, throwsA(isA<AssertionError>()));
+    }, throwsA(isA<ArgumentError>()));
 
     // invalid range, syntax error
     expect(() {
@@ -24,7 +24,7 @@ void main() {
     // invalid range, first > last
     expect(() {
       return parser.parse('12-10 4-2 2-1 5-2 3-1');
-    }, throwsA(isA<AssertionError>()));
+    }, throwsA(isA<ArgumentError>()));
   });
 
   test('Successful parse', () {

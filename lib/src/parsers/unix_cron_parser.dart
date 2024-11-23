@@ -9,11 +9,12 @@ class UnixCronParser implements CronParserInterface {
   CronSchedule parse(String cron) {
     final fields = _presets(cron).toLowerCase().trim().split(' ');
 
-    assert(
-      fields.length == 5,
-      'The cron format must be have five time and date fields separated by at '
-      'least one blank',
-    );
+    if (fields.length != 5) {
+      throw ArgumentError(
+        'The cron format must be have five time and date fields separated by at '
+        'least one blank',
+      );
+    }
 
     final minutes = _parseField(fields[0], 0, 59);
     final hours = _parseField(fields[1], 0, 23);
@@ -115,7 +116,9 @@ class UnixCronParser implements CronParserInterface {
       }
       final Set<int> result = {};
       for (var element in parts) {
-        assert(element.isNotEmpty);
+        if (element.isEmpty) {
+          throw ArgumentError('Empty field');
+        }
 
         result.addAll(_parsePart(element, min, max));
       }
@@ -145,7 +148,10 @@ class UnixCronParser implements CronParserInterface {
   Set<int> _parseValue(String part, int min, int max) {
     try {
       final value = int.parse(part);
-      assert(value >= min && value <= max);
+
+      if (value < min || value > max) {
+        throw ArgumentError('Wrong field value $part');
+      }
 
       return {value};
     } on FormatException {
@@ -162,20 +168,27 @@ class UnixCronParser implements CronParserInterface {
       to = 7;
     }
 
-    assert(from < to && from >= min && to <= max);
+    if (from >= to || from < min || to > max) {
+      throw ArgumentError('Invalid range $part');
+    }
 
     return List.generate(to - from + 1, (i) => i + from).toSet();
   }
 
   Set<int> _parseConstraint(String part, int min, int max) {
     final matches = RegExp(r'\d+').allMatches(part);
-    assert(matches.length == 3);
+
+    if (matches.length != 3) {
+      throw ArgumentError('Invalid constraint $part');
+    }
 
     final lower = int.parse(matches.first.group(0)!);
     final higher = int.parse(matches.elementAt(1).group(0)!);
     final step = int.parse(matches.last.group(0)!);
-    assert(lower < higher && lower >= min && higher <= max);
-    assert(higher >= lower);
+
+    if (lower > higher || lower < min || higher > max || higher < lower) {
+      throw ArgumentError('Invalid constraint $part');
+    }
 
     if (lower + step > higher) {
       return {lower};
