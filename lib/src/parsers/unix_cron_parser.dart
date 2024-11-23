@@ -186,7 +186,7 @@ class UnixCronParser implements CronParserInterface {
     final higher = int.parse(matches.elementAt(1).group(0)!);
     final step = int.parse(matches.last.group(0)!);
 
-    if (lower > higher || lower < min || higher > max || higher < lower) {
+    if (lower < min || higher > max || higher < lower) {
       throw ArgumentError('Invalid constraint $part');
     }
 
